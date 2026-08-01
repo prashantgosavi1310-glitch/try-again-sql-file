@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
+import { execSync } from "child_process";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -69,6 +70,21 @@ app.get("/health", (req, res) => {
 });
 
 // ---------------------------------------------------------------------
+// Migration endpoint (temporary — remove after first run)
+// ---------------------------------------------------------------------
+app.post("/api/trigger-migration", (req, res) => {
+  try {
+    console.log("[migration] Starting database schema migration...");
+    execSync("npm run migrate", { stdio: "inherit" });
+    console.log("[migration] Completed successfully.");
+    res.json({ success: true, message: "Migration completed successfully." });
+  } catch (err) {
+    console.error("[migration] Failed:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------
 // Routes
 // ---------------------------------------------------------------------
 app.use("/api/auth", authRoutes);
@@ -86,3 +102,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
