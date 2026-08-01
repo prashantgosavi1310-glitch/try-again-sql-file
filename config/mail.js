@@ -4,6 +4,14 @@
 // "App Password" (Google Account → Security → App Passwords). Regular
 // account passwords will not work if 2FA is enabled, and using them
 // is not recommended even if it does.
+//
+// NOTE: uses explicit host/port 587 (STARTTLS) instead of the
+// `service: "gmail"` shorthand (implicit port 465/SSL). Some hosts,
+// including Railway on certain plans/regions, block or are unreliable
+// on port 465 outbound, which surfaces as a silent connection timeout
+// rather than an auth error. Port 587 + STARTTLS is more broadly
+// permitted. Explicit timeouts are set so a network-level block fails
+// fast and visibly instead of hanging.
 // =====================================================================
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
@@ -11,11 +19,16 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // STARTTLS upgrades the connection; must be false for port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  connectionTimeout: 10000, // fail fast (10s) instead of hanging on a blocked port
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
 });
 
 // Verify the SMTP connection once at startup so misconfiguration shows
