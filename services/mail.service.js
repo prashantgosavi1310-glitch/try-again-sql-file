@@ -1,8 +1,8 @@
 // =====================================================================
-// Mail service — wraps the Nodemailer transporter with app-specific
+// Mail service — wraps the Resend email client with app-specific
 // email templates so controllers never touch raw HTML.
 // =====================================================================
-import transporter from "../config/mail.js";
+import { sendMail } from "../config/mail.js";
 
 function otpEmailHtml(otp) {
   return `
@@ -32,11 +32,11 @@ function otpEmailHtml(otp) {
 }
 
 export async function sendOtpEmail(email, otp) {
-  await transporter.sendMail({
-    from: `"MessMate" <${process.env.EMAIL_USER}>`,
+  await sendMail({
     to: email,
     subject: "Your MessMate verification code",
     text: `Your MessMate verification code is ${otp}. It expires in 10 minutes.`,
     html: otpEmailHtml(otp),
   });
 }
+

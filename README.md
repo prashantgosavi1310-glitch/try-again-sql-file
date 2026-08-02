@@ -18,7 +18,7 @@ backend/
 
   config/
     database.js              PostgreSQL pool
-    mail.js                  Nodemailer transporter (Gmail SMTP)
+    mail.js                  Resend email client
 
   routes/
     auth.routes.js            /api/auth/*
@@ -70,10 +70,11 @@ npm run dev                # nodemon, http://localhost:5000
 
 Health check: `GET /health` → `{ "success": true, "message": "MessMate API is running." }`
 
-### Gmail SMTP setup
-`EMAIL_USER` / `EMAIL_PASS` need a Gmail **App Password**, not your normal
-login password: Google Account → Security → 2-Step Verification → App
-Passwords → generate a 16-character password for "Mail".
+### Resend email setup
+`RESEND_API_KEY` must be obtained from [resend.com/api-keys](https://resend.com/api-keys).
+`EMAIL_FROM` must be a verified sender domain in your Resend account (e.g.,
+`onboarding@example.com` if you've verified `example.com`, or use the default
+Resend test domain `onboarding@resend.dev` for development only).
 
 ---
 
@@ -82,7 +83,7 @@ Passwords → generate a 16-character password for "Mail".
 Run `database/schema.sql` (via `npm run migrate`, or `psql $DATABASE_URL -f database/schema.sql`).
 
 | Table               | Purpose                                                        |
-|---------------------|------------------------------------------------------------------|
+|---------------------|---------------------------------------------------------------------|
 | `users`              | Student/mess-user accounts                                       |
 | `messes`             | Mess-owner accounts + their mess listing (1:1 by design)          |
 | `mess_photos`        | Multiple gallery photos per mess (`messPhotos[]` upload)          |
@@ -98,7 +99,7 @@ against production.
 
 ## 4. API Reference
 
-All responses are JSON: `{ "success": boolean, "message": string, "data"?/"errors"? }`.
+All responses are JSON: `{ "success": boolean, "message": string, "data"?/errors?" }`.
 
 ### `POST /api/auth/send-otp`
 ```json
@@ -207,7 +208,8 @@ already expects.
 4. Under your service's **Variables**, add:
    - `JWT_SECRET` — a long random string
    - `JWT_EXPIRES_IN` — e.g. `7d`
-   - `EMAIL_USER`, `EMAIL_PASS` — Gmail address + App Password
+   - `RESEND_API_KEY` — from [resend.com/api-keys](https://resend.com/api-keys)
+   - `EMAIL_FROM` — a verified sender in your Resend account
    - `CLIENT_URL` — the deployed frontend's origin (exact scheme+host, no trailing slash)
    - `NODE_ENV=production`
    - `MAX_IMAGE_MB`, `MAX_PDF_MB`, `MAX_MESS_PHOTOS` (optional — defaults are 5/8/6)
@@ -247,3 +249,4 @@ frontend changes are required** as long as:
    page whenever you're ready; this API doesn't require it to exist yet.
 
 No other frontend file needs to change.
+
