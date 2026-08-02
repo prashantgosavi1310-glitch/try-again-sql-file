@@ -10,12 +10,13 @@ dotenv.config();
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendOtpEmail(to, otp) {
+export async function sendMail({ to, subject, html, text }) {
   const { data, error } = await resend.emails.send({
     from: "onboarding@resend.dev",
     to,
-    subject: "Your OTP Code",
-    html: `<p>Your verification code is: <strong>${otp}</strong></p>`,
+    subject,
+    html,
+    text,
   });
 
   if (error) {
@@ -23,6 +24,6 @@ export async function sendOtpEmail(to, otp) {
     throw error;
   }
 
-  console.log("[mail] OTP email sent via Resend:", data?.id);
+  console.log("[mail] Email sent via Resend:", data?.id);
   return data;
 }
